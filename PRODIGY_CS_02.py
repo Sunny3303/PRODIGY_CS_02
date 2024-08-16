@@ -1,38 +1,51 @@
-import string
+import cv2
+import numpy as np
 
-def check_password_strength(password):
+def encrypt_image(input_image_path, output_image_path, key):
+  """Encrypts an image using pixel manipulation.
 
-  length = len(password)
-  has_upper = any(char.isupper() for char in password)
-  has_lower = any(char.islower() for char in password)
-  has_digit = any(char.isdigit() for char in password)
-  has_special = any(char in string.punctuation for char in password)
+  Args:
+    input_image_path: Path to the input image.
+    output_image_path: Path to save the encrypted image.
+    key: A numerical key for the encryption process.
+  """
 
-  strength = 0
-  if length >= 8:
-    strength += 1
-  if has_upper:
-    strength += 1
-  if has_lower:
-    strength += 1
-  if has_digit:
-    strength += 1
-  if has_special:
-    strength += 1
+  img = cv2.imread(input_image_path)
+  height, width, channels = img.shape
 
-  if strength == 0:
-    return "Very weak"
-  elif strength <= 2:
-    return "Weak"
-  elif strength <= 3:
-    return "Medium"
-  else:
-    return "Strong"
+  # Simple encryption: XOR with the key
+  encrypted_img = np.zeros_like(img)
+  for i in range(height):
+    for j in range(width):
+      encrypted_img[i, j] = img[i, j] ^ key
 
-def main():
-  password = input("Enter your password: ")
-  strength = check_password_strength(password)
-  print("Password strength:", strength)
+  cv2.imwrite(output_image_path, encrypted_img)
 
-if __name__ == "__main__":
-  main()
+def decrypt_image(input_image_path, output_image_path, key):
+  """Decrypts an image using pixel manipulation.
+
+  Args:
+    input_image_path: Path to the encrypted image.
+    output_image_path: Path to save the decrypted image.
+    key: The numerical key used for encryption.
+  """
+
+  img = cv2.imread(input_image_path)
+  height, width, channels = img.shape
+
+  # Decryption is the same as encryption for XOR
+  decrypted_img = np.zeros_like(img)
+  for i in range(height):
+    for j in range(width):
+      decrypted_img[i, j] = img[i, j] ^ key
+
+  cv2.imwrite(output_image_path, decrypted_img)
+
+# Example usage
+input_image = "image.jpg"
+output_encrypted = "encrypted.jpg"
+output_decrypted = "decrypted.jpg"
+key = 42
+
+encrypt_image(input_image, output_encrypted, key)
+decrypt_image(output_encrypted, output_decrypted, key)
